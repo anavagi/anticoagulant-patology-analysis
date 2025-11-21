@@ -1,0 +1,312 @@
+{
+  "name": "Medications Anticoagulants",
+  "remarks": [
+    "Global module that prescribes anticoagulants when indicated",
+    "Keeps patients on medication long-term for INR monitoring"
+  ],
+  "states": {
+    "Initial": {
+      "type": "Initial",
+      "direct_transition": "Check_Needs_Anticoagulant"
+    },
+    "Check_Needs_Anticoagulant": {
+      "type": "Guard",
+      "allow": {
+        "condition_type": "Or",
+        "conditions": [
+          {
+            "condition_type": "Active Condition",
+            "codes": [
+              {
+                "system": "SNOMED-CT",
+                "code": "49436004",
+                "display": "Atrial fibrillation"
+              }
+            ]
+          },
+          {
+            "condition_type": "Active Condition",
+            "codes": [
+              {
+                "system": "SNOMED-CT",
+                "code": "195230003",
+                "display": "Cerebrovascular accident"
+              }
+            ]
+          },
+          {
+            "condition_type": "Active Condition",
+            "codes": [
+              {
+                "system": "SNOMED-CT",
+                "code": "59282003",
+                "display": "Pulmonary embolism"
+              }
+            ]
+          },
+          {
+            "condition_type": "Active Condition",
+            "codes": [
+              {
+                "system": "SNOMED-CT",
+                "code": "132281000119108",
+                "display": "Deep vein thrombosis"
+              }
+            ]
+          }
+        ]
+      },
+      "direct_transition": "Check_Already_On_Anticoagulant"
+    },
+    "Check_Already_On_Anticoagulant": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Or",
+            "conditions": [
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049630",
+                    "display": "Warfarin"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "989770",
+                    "display": "Apixaban"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049631",
+                    "display": "Rivaroxaban"
+                  }
+                ]
+              }
+            ]
+          },
+          "transition": "Wait_And_Recheck"
+        },
+        {
+          "transition": "Prescribe_Anticoagulant"
+        }
+      ]
+    },
+    "Prescribe_Anticoagulant": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "distribution": 0.5,
+          "transition": "Warfarin"
+        },
+        {
+          "distribution": 0.3,
+          "transition": "Apixaban"
+        },
+        {
+          "distribution": 0.2,
+          "transition": "Rivaroxaban"
+        }
+      ]
+    },
+    "Warfarin": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "1049630",
+          "display": "Warfarin"
+        }
+      ],
+      "reason": "anticoagulation_indication",
+      "chronic": true,
+      "direct_transition": "Wait_And_Recheck"
+    },
+    "Apixaban": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "989770",
+          "display": "Apixaban"
+        }
+      ],
+      "reason": "anticoagulation_indication",
+      "chronic": true,
+      "direct_transition": "Wait_And_Recheck"
+    },
+    "Rivaroxaban": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "1049631",
+          "display": "Rivaroxaban"
+        }
+      ],
+      "reason": "anticoagulation_indication",
+      "chronic": true,
+      "direct_transition": "Wait_And_Recheck"
+    },
+    "Wait_And_Recheck": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 6,
+        "unit": "months"
+      },
+      "direct_transition": "Check_Continue_Medication"
+    },
+    "Check_Continue_Medication": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Or",
+            "conditions": [
+              {
+                "condition_type": "Active Condition",
+                "codes": [
+                  {
+                    "system": "SNOMED-CT",
+                    "code": "49436004",
+                    "display": "Atrial fibrillation"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Condition",
+                "codes": [
+                  {
+                    "system": "SNOMED-CT",
+                    "code": "195230003",
+                    "display": "Cerebrovascular accident"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Condition",
+                "codes": [
+                  {
+                    "system": "SNOMED-CT",
+                    "code": "59282003",
+                    "display": "Pulmonary embolism"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Condition",
+                "codes": [
+                  {
+                    "system": "SNOMED-CT",
+                    "code": "132281000119108",
+                    "display": "Deep vein thrombosis"
+                  }
+                ]
+              }
+            ]
+          },
+          "transition": "Wait_And_Recheck"
+        },
+        {
+          "transition": "Stop_Anticoagulant"
+        }
+      ]
+    },
+    "Stop_Anticoagulant": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": "1049630",
+                "display": "Warfarin"
+              }
+            ]
+          },
+          "transition": "End_Warfarin"
+        },
+        {
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": "989770",
+                "display": "Apixaban"
+              }
+            ]
+          },
+          "transition": "End_Apixaban"
+        },
+        {
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": "1049631",
+                "display": "Rivaroxaban"
+              }
+            ]
+          },
+          "transition": "End_Rivaroxaban"
+        },
+        {
+          "transition": "Terminal"
+        }
+      ]
+    },
+    "End_Warfarin": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "1049630",
+          "display": "Warfarin"
+        }
+      ],
+      "direct_transition": "Terminal"
+    },
+    "End_Apixaban": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "989770",
+          "display": "Apixaban"
+        }
+      ],
+      "direct_transition": "Terminal"
+    },
+    "End_Rivaroxaban": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": "1049631",
+          "display": "Rivaroxaban"
+        }
+      ],
+      "direct_transition": "Terminal"
+    },
+    "Terminal": {
+      "type": "Terminal"
+    }
+  },
+  "gmf_version": 1
+}

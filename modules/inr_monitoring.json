@@ -1,0 +1,381 @@
+{
+  "name": "INR Monitoring",
+  "remarks": [
+    "This module monitors INR levels for patients on anticoagulant therapy"
+  ],
+  "states": {
+    "Initial": {
+      "type": "Initial",
+      "direct_transition": "Check_For_Anticoagulant"
+    },
+    "Check_For_Anticoagulant": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Or",
+            "conditions": [
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049630",
+                    "display": "Warfarin"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "989770",
+                    "display": "Apixaban"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049631",
+                    "display": "Rivaroxaban"
+                  }
+                ]
+              }
+            ]
+          },
+          "transition": "Check_Already_Monitored"
+        },
+        {
+          "transition": "Wait_For_Medication"
+        }
+      ]
+    },
+    "Check_Already_Monitored": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "inr_monitoring_active",
+            "operator": "==",
+            "value": true
+          },
+          "transition": "Wait_For_Medication"
+        },
+        {
+          "transition": "Set_Monitoring_Active"
+        }
+      ]
+    },
+    "Set_Monitoring_Active": {
+      "type": "SetAttribute",
+      "attribute": "inr_monitoring_active",
+      "value": true,
+      "direct_transition": "Initial_Delay"
+    },
+    "Wait_For_Medication": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 1,
+        "unit": "months"
+      },
+      "direct_transition": "Check_For_Anticoagulant"
+    },
+    "Initial_Delay": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 1,
+        "unit": "weeks"
+      },
+      "direct_transition": "INR_Encounter"
+    },
+    "INR_Encounter": {
+      "type": "Encounter",
+      "encounter_class": "ambulatory",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "185349003",
+          "display": "Encounter for monitoring of anticoagulant therapy"
+        }
+      ],
+      "direct_transition": "Determine_INR_Level"
+    },
+    "Determine_INR_Level": {
+      "type": "Simple",
+      "complex_transition": [
+        {
+          "distributions": [
+            {
+              "distribution": 0.35,
+              "transition": "Low_INR_Range"
+            },
+            {
+              "distribution": 0.25,
+              "transition": "Therapeutic_INR_Range"
+            },
+            {
+              "distribution": 0.25,
+              "transition": "High_INR_Range_1"
+            },
+            {
+              "distribution": 0.10,
+              "transition": "High_INR_Range_2"
+            },
+            {
+              "distribution": 0.04,
+              "transition": "Very_High_INR_Range"
+            },
+            {
+              "distribution": 0.01,
+              "transition": "Critically_High_INR"
+            }
+          ]
+        }
+      ]
+    },
+    "Low_INR_Range": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 1.0,
+        "high": 2.0
+      },
+      "direct_transition": "Record_PT_Low"
+    },
+    "Therapeutic_INR_Range": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 2.0,
+        "high": 3.0
+      },
+      "direct_transition": "Record_PT_Therapeutic"
+    },
+    "High_INR_Range_1": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 3.0,
+        "high": 4.0
+      },
+      "direct_transition": "Record_PT_High"
+    },
+    "High_INR_Range_2": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 4.0,
+        "high": 5.0
+      },
+      "direct_transition": "Record_PT_High"
+    },
+    "Very_High_INR_Range": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 5.0,
+        "high": 7.0
+      },
+      "direct_transition": "Record_PT_Very_High"
+    },
+    "Critically_High_INR": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "6301-6",
+          "display": "INR in Platelet poor plasma by Coagulation assay"
+        }
+      ],
+      "unit": "{INR}",
+      "range": {
+        "low": 7.0,
+        "high": 10.0
+      },
+      "direct_transition": "Record_PT_Very_High"
+    },
+    "Record_PT_Low": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "5902-2",
+          "display": "Prothrombin time (PT)"
+        }
+      ],
+      "unit": "s",
+      "range": {
+        "low": 11,
+        "high": 15
+      },
+      "direct_transition": "End_Encounter"
+    },
+    "Record_PT_Therapeutic": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "5902-2",
+          "display": "Prothrombin time (PT)"
+        }
+      ],
+      "unit": "s",
+      "range": {
+        "low": 18,
+        "high": 25
+      },
+      "direct_transition": "End_Encounter"
+    },
+    "Record_PT_High": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "5902-2",
+          "display": "Prothrombin time (PT)"
+        }
+      ],
+      "unit": "s",
+      "range": {
+        "low": 28,
+        "high": 38
+      },
+      "direct_transition": "End_Encounter"
+    },
+    "Record_PT_Very_High": {
+      "type": "Observation",
+      "category": "laboratory",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "5902-2",
+          "display": "Prothrombin time (PT)"
+        }
+      ],
+      "unit": "s",
+      "range": {
+        "low": 40,
+        "high": 60
+      },
+      "direct_transition": "End_Encounter"
+    },
+    "End_Encounter": {
+      "type": "EncounterEnd",
+      "direct_transition": "Wait_Next_Check"
+    },
+    "Wait_Next_Check": {
+      "type": "Delay",
+      "range": {
+        "low": 2,
+        "high": 4,
+        "unit": "weeks"
+      },
+      "direct_transition": "Check_Continue"
+    },
+    "Check_Continue": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "Or",
+            "conditions": [
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049630",
+                    "display": "Warfarin"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "989770",
+                    "display": "Apixaban"
+                  }
+                ]
+              },
+              {
+                "condition_type": "Active Medication",
+                "codes": [
+                  {
+                    "system": "RxNorm",
+                    "code": "1049631",
+                    "display": "Rivaroxaban"
+                  }
+                ]
+              }
+            ]
+          },
+          "transition": "INR_Encounter"
+        },
+        {
+          "transition": "Stop_Monitoring"
+        }
+      ]
+    },
+    "Stop_Monitoring": {
+      "type": "SetAttribute",
+      "attribute": "inr_monitoring_active",
+      "value": false,
+      "direct_transition": "Terminal"
+    },
+    "Terminal": {
+      "type": "Terminal"
+    }
+  },
+  "gmf_version": 1
+}

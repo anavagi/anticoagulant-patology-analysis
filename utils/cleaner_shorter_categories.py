@@ -193,6 +193,20 @@ variable_rename_map = {
 }
 
 
+med_map = {
+    'heparin sodium  porcine 100 UNT/ML Injectable Solution': 'Heparin_100',
+    'heparin sodium  porcine 1000 UNT/ML Injectable Solution': 'Heparin_1000',
+    '0.4 ML Enoxaparin sodium 100 MG/ML Prefilled Syringe': 'Enoxaparin_100',
+    '1 ML Enoxaparin sodium 150 MG/ML Prefilled Syringe': 'Enoxaparin_150',
+    '1 ML heparin sodium  porcine 5000 UNT/ML Injection': 'Heparin_5000',
+    'enoxaparin sodium 100 MG/ML Injectable Solution': 'Enoxaparin_100',
+    'Warfarin Sodium 5 MG Oral Tablet': 'Warfarin_5',
+    'warfarin sodium 5 MG Oral Tablet': 'Warfarin_5',
+    'nan': 'No_medication'
+}
+
+
+
 def shorten_variable_names(df: pd.DataFrame, 
                            column: str = 'DESCRIPTION',
                            inplace: bool = False,
@@ -235,6 +249,39 @@ def shorten_variable_names(df: pd.DataFrame,
     print(f"Shortened {mapped_count}/{total_count} variable names ({mapped_count/total_count*100:.1f}%)")
     
     return df
+
+
+def shorten_variable_names_med(df: pd.DataFrame, 
+                           column: str = 'DESCRIPTION',
+                           inplace: bool = False,
+                           custom_map: Dict[str, str] = None) -> pd.DataFrame:
+    """
+    Replace long medical variable names with shorter, descriptive ones.
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        DataFrame with long variable names
+    column : str
+        Column name containing the variable descriptions (default: 'DESCRIPTION')
+    inplace : bool
+        If True, modify the column in place. If False, create a new column (default: False)
+    custom_map : Dict[str, str]
+        Additional custom mappings to merge with default mappings
+    
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with shortened variable names
+    """
+
+    df[column] = df[column].map(med_map)
+    mapped_count = df[column].isin(med_map.keys()).sum()
+    total_count = len(df)
+    print(f"Shortened {mapped_count}/{total_count} variable names ({mapped_count/total_count*100:.1f}%)")
+    
+    return df
+
 
 
 def shorten_column_names(df: pd.DataFrame, 
@@ -282,6 +329,7 @@ def shorten_column_names(df: pd.DataFrame,
                 print(f"  ... and {len(unmapped) - 10} more")
     
     return df
+
 
 
 def get_original_name(short_name: str) -> Union[str, None]:
