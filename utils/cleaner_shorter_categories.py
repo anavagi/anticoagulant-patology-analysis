@@ -207,6 +207,8 @@ med_map = {
 
 
 
+
+
 def shorten_variable_names(df: pd.DataFrame, 
                            column: str = 'DESCRIPTION',
                            inplace: bool = False,

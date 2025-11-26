@@ -1,1 +1,22 @@
+# Entorno
+.env
+myenv/
+.vscode/
 
+# Dependencias / caches
+__pycache__/
+*.pyc
+
+# Datos
+data/
+pdf/
+others/
+synthea/
+catboost_info/
+modules/
+
+# Archivos binarios
+*.jar
+
+# Notebooks generados temporalmente (opcional)
+*.ipynb_checkpoints
