@@ -106,19 +106,26 @@ def plot_validation_curve_boosting(estimator,X, y,param_name,param_range):
         y=y,
         param_name=param_name, # Nombre del parámetro que vamos a variar
         param_range=param_range,
+        cv=5, # Añadir validación cruzada para robustez
+        scoring="neg_mean_squared_error", # Usar una métrica de error
+        n_jobs=-1
     )
 
     # 4. Cálculo de la media y la visualización
-    train_scores_mean = np.mean(-train_scores, axis=1) # El error en entrenamiento
-    test_scores_mean = np.mean(-test_scores, axis=1)   # El error en validación
-
+    train_scores_mean = np.sqrt(np.mean(-train_scores, axis=1)) # RMSE en Entrenamiento
+    test_scores_mean = np.sqrt(np.mean(-test_scores, axis=1))   # RMSE en Validación
+    
     plt.figure(figsize=(10, 6))
-    plt.plot(param_range, train_scores_mean, label="Error en Entrenamiento", color="blue", marker='o')
-    plt.plot(param_range, test_scores_mean, label="Error en Validación", color="red", marker='o')
+    plt.plot(param_range, train_scores_mean, label="Error en Entrenamiento (RMSE)", color="blue", marker='o')
+    plt.plot(param_range, test_scores_mean, label="Error en Validación (RMSE)", color="red", marker='o')
 
-    plt.title(f"Curva de Validación {param_name}")
+    plt.title(f"Curva de Validación para {param_name}")
     plt.xlabel(f"Valor de {param_name}")
     plt.ylabel("Error Cuadrático Medio (RMSE)")
+    
+    # Añadir un punto vertical para el valor óptimo (si lo conoces)
+    # plt.axvline(x=10, color='gray', linestyle='--', label='Max Depth Óptima (10)')
+    
     plt.legend(loc="best")
-    plt.grid()
+    plt.grid(True)
     plt.show()
