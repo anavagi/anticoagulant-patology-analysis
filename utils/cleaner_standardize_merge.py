@@ -225,7 +225,9 @@ def standardize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     # 2. Recórrer les columnes del DataFrame per trobar el nom net corresponent
     for original_col in df.columns:
         # Normalitzem el nom per facilitar la cerca (sense accents, minúscules, espais)
+        print(original_col)
         normalized_col = original_col.upper().replace(' ', '_').replace('.', '_').replace('-', '_').replace('(SÈRUM);_C_CAT', '').replace(';', '').replace(',', '').strip()
+        print(normalized_col)
 
         found_match = False
         for pattern, clean_name in name_map:
@@ -233,10 +235,13 @@ def standardize_column_names(df: pd.DataFrame) -> pd.DataFrame:
             if pattern.upper() in original_col.upper() or pattern.upper() in normalized_col:
                 column_mapping[original_col] = clean_name
                 found_match = True
+                print("Son iguales")
                 break
         
         if not found_match:
             # Per a les columnes que no coincideixen, les mantenim (o les netegem bàsicament)
+            print("NO SON IGUALES")
+            print(original_col)
             column_mapping[original_col] = original_col.strip() 
 
     # 3. Aplicar el reanomenament
