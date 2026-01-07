@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score,make_scorer
 from sklearn.model_selection import learning_curve
 from matplotlib import pyplot as plt
@@ -128,4 +129,69 @@ def plot_validation_curve_boosting(estimator,X, y,param_name,param_range):
     
     plt.legend(loc="best")
     plt.grid(True)
+    plt.show()
+
+
+
+def evaluar_y_comparar_final(modelos, nombres, X_test, y_test):
+    """
+    Evalúa una lista de modelos en el conjunto de prueba (X_test, y_test)
+    y retorna un DataFrame con las métricas de comparación.
+    """
+    
+    # 1. Inicializar el diccionario para almacenar los resultados
+    resultados = {}
+    
+    # 2. Iterar sobre cada modelo para predecir y evaluar
+    for nombre, modelo in zip(nombres, modelos):
+        
+        # --- CORRECCIÓN CLAVE ---
+        # El modelo DEBE generar predicciones antes de evaluar las métricas.
+        y_pred = modelo.predict(X_test) 
+        
+        # Llamamos a tu función evaluate_model con los argumentos correctos:
+        # (y_true=y_test, y_pred=y_pred, model_name=nombre)
+        metricas = evaluate_model(y_test, y_pred, nombre)
+        
+        # Almacenar las métricas
+        resultados[nombre] = metricas
+        
+    # 3. Retornar el resultado en un DataFrame de Pandas
+    return pd.DataFrame(resultados).T
+
+def plot_comparativa_final(df):
+    
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    metrics = ['R2', 'RMSE', 'MAE']
+    titles = ['R² (cerca de 1)', 'RMSE (cerca de 0)', 'MAE (cerca de 0)']
+    
+    for i, metric in enumerate(metrics):
+        ax = axes[i]
+        bars = ax.bar(df.index, df[metric], color='skyblue')
+        
+        # Destacar al ganador (Máximo para R2, Mínimo para RMSE/MAE)
+        if metric == 'R2':
+            winner = df[metric].idxmax()
+            criteria = 'max'
+        else:
+            winner = df[metric].idxmin()
+            criteria = 'min'
+            
+        # Pintar la barra ganadora de color rojo para resaltarla
+        winner_index = df.index.get_loc(winner)
+        bars[winner_index].set_color('red')
+        
+        # Añadir etiquetas de valor
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, 
+                    yval * (0.95 if yval < 0 else 1.05), # Ajuste para textos negativos
+                    f'{yval:.3f}', ha='center', va='center', fontsize=9, color='black')
+
+        ax.set_title(titles[i], fontsize=14)
+        ax.set_ylabel(metric)
+        ax.tick_params(axis='x', rotation=45)
+        ax.grid(axis='y', linestyle='--')
+        
+    plt.tight_layout()
     plt.show()
